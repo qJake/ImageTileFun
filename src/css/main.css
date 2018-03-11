@@ -1,0 +1,78 @@
+.itf-date
+{
+    z-index: 5;
+    opacity: 0.8;
+}
+
+.itf-title
+{
+    z-index: 6;
+    opacity: 0.8;
+}
+
+.itf-sort
+{
+    min-width: 10rem !important;
+    width: 10rem !important;
+}
+
+.itf-count
+{
+    min-width: 6rem !important;
+    width: 6rem !important;
+}
+
+#options
+{
+    background-color: #bacfe6;
+    display: flex;
+    flex-flow: row nowrap;
+    align-items: center;
+    padding: 0.5rem;
+    margin-bottom: 1.5rem;
+}
+
+#options .field
+{
+    display: flex;
+    flex-flow: row nowrap;
+    align-items: center;
+    height: 100%;
+    margin: 0 1.5rem;
+}
+
+#options .field input[type=checkbox]
+{
+    margin-right: 0.5rem;
+}
+
+#options .field input[type=range]
+{
+    margin: 0 0.5rem;
+}
+
+#results
+{
+    padding: 0 1rem;
+}
+
+/* Semantic fixes */
+div.visible.menu
+{
+    z-index: 20;
+}
+.ui.floating.label
+{
+    z-index: 8;
+}
+
+/* Hide arrows on input[type=number] */
+input[type='number']
+{
+    -moz-appearance: textfield;
+}
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button
+{
+    -webkit-appearance: none;
+}

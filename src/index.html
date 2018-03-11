@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.3.0/semantic.min.css" integrity="sha256-/mC8AIsSmTcTtaf8vgnfbZXZLYhJCd0b9If/M0Y5nDw=" crossorigin="anonymous" />
+    <link rel="stylesheet" href="css/main.css" type="text/css" />
+</head>
+<body ng-app="imagetilefun">
+    <a id="top"></a>
+    <div id="app" ng-controller="MainController as vm">
+        <div id="options" class="ui form">
+            <div class="field">
+                <input type="text" placeholder="aww, cats, puppies, ..." ng-keypress="vm.loadKeyPressed($event)" ng-model="vm.subreddit" />
+                <select class="ui itf-sort select" ng-model="vm.sortOption">
+                    <option value="_">Hot (default)</option>
+                    <option value="new">New</option>
+                    <option value="rising">Rising</option>
+                    <option value="controversial">Controversial</option>
+                    <option value="top">Top</option>
+                </select>
+                <select class="ui itf-count select" ng-model="vm.postCount">
+                    <option value="10">10</option>
+                    <option value="25">25</option>
+                    <option value="50">50</option>
+                    <option value="75">75</option>
+                    <option value="100">100</option>
+                </select>
+                <button type="button" class="ui right attached icon labeled primary button" ng-class="{'disabled': vm.mainLoading}" ng-click="vm.load()">
+                    <i class="right arrow icon"></i>
+                    Go
+                </button>
+            </div>
+            <div class="field">
+                <input type="checkbox" ng-model="vm.showTitles" ng-change="vm.basicChangedHandler()" />
+                <label>Show Titles</label>
+            </div>
+            <div class="field">
+                <input type="checkbox" ng-model="vm.showDates" ng-change="vm.basicChangedHandler()" />
+                <label>Show Date/Comments</label>
+            </div>
+            <div class="field">
+                <input type="checkbox" ng-model="vm.showPostNum" ng-change="vm.basicChangedHandler()" />
+                <label>Show Post #s</label>
+            </div>
+            <div class="field">
+                <label>Cards per row</label>
+                <input type="range" min="3" max="12" ng-change="vm.updateClassName(vm.cardsPerRow)" ng-model="vm.cardsPerRow" /> <span>{{vm.cardsPerRow}}</span>
+            </div>
+            <div class="field">
+                <label>Include:</label>
+                <div class="field">
+                    <input type="checkbox" ng-model="vm.showImages" ng-change="vm.basicChangedHandler()" />
+                    <label>Images</label>
+                </div>
+                <input type="checkbox" ng-model="vm.showGifs" ng-change="vm.basicChangedHandler()" />
+                <label>GIFs/GIFVs</label>
+            </div>
+        </div>
+        <div id="results" class="ui stackable six column grid">
+            <div class="middle aligned column" ng-repeat="card in vm.images" ng-if="vm.showClass(card.metadata.class)">
+                <div class="ui fluid card">
+                    <div class="ui inverted active dimmer" ng-show="card.isLoading">
+                        <div class="ui loader"></div>
+                    </div>
+                    <div class="ui blue floating circular label" ng-show="vm.showPostNum">{{card.postNum}}</div>
+                    <div class="ui grey bottom attached mini itf-date label" title="{{card.datePostedFriendly}}" ng-show="vm.showDates">
+                        <div class="ui right floated content">
+                            <a ng-href="{{card.permalink}}" target="_blank" style="color: white;">{{card.comments}} <ng-pluralize count="card.comments" when="{'1': 'comment', 'other': 'comments'}" /></a>
+                        </div>
+                        {{card.datePostedAgo}}
+                    </div>
+                    <div class="ui top attached small itf-title label" ng-show="vm.showTitles">
+                        {{card.title}}
+                    </div>  
+                    <div class="image">
+                        <a target="_blank" href="{{card.imageUrl}}">
+                            <img class="ui image" ng-src="{{card.metadata.updatedImageUrl ? card.metadata.updatedImageUrl : card.imageUrl}}" ng-if="card.metadata.displayAs == 'image'" />
+                            <video class="ui image" ng-if="card.metadata.displayAs == 'video'" preload="auto" autoplay="autoplay" loop="loop" muted="muted">
+                                <source ng-src="{{card.metadata.updatedImageUrl ? card.metadata.updatedImageUrl : card.imageUrl}}" type="video/mp4" />
+                            </video>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="ui active centered huge inline loader" ng-show="vm.mainLoading" style="min-height: 150px; margin-top: 5rem;"></div>
+        <div ng-show="vm.images.length && !vm.next" class="ui center aligned header" style="margin-top: 4rem; margin-bottom: 5rem;">
+            <p><em>This is the end! You've gone too far!</em></p>
+            <p><small><em>(Reddit doesn't have any more posts.)</em></small></p>
+            <p><a href="#top">Start Over</a></p>
+        </div>
+    </div>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.4/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PreloadJS/1.0.1/preloadjs.min.js" integrity="sha256-ZZq6dK95V2jZ2NLtaI5JzV9H2UJdWhYwMpqEV1m0WR0=" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.21.0/moment.min.js" integrity="sha256-9YAuB2VnFZNJ+lKfpaQ3dKQT9/C0j3VUla76hHbiVF8=" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.3.0/semantic.min.js" integrity="sha256-FMQoXFhCWeNb139Wa9Z2I0UjqDeKKDYY+6PLkWv4qco=" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.6.5/angular.min.js" integrity="sha256-zBy1l2WBAh2vPF8rnjFMUXujsfkKjya0Jy5j6yKj0+Q=" crossorigin="anonymous"></script>
+    <script src="app/app.js" defer></script>
+</body>
+</html>

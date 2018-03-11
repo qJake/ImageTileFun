@@ -1,0 +1,14 @@
+{
+  "name": "imagetilefun",
+  "description": "A fun tile-based image viewer for Reddit.",
+  "version": "1.0.0",
+  "author": {
+    "name": "qJake",
+    "url": "https://github.com/qJake/"
+  },
+  "license": "MIT",
+  "devDependencies": {
+    "@types/jquery": "2.0.40",
+    "@types/angular": "1.6.43"
+  }
+}
