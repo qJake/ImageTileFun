@@ -1,8 +1,0 @@
-{
-    "compilerOptions": {
-        "module": "none",
-        "target": "es6",
-        "outFile": "src/app/app.js"
-    },
-    "compileOnSave": true
-}
