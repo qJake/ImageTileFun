@@ -1,9 +1,0 @@
-# NPM/JS stuff
-node_modules/
-
-# Windows stuff
-Thumbs.db
-Desktop.ini
-$RECYCLE.BIN
-*.lnk
-._*
