@@ -22,6 +22,14 @@
     width: 6rem !important;
 }
 
+.info-link,
+.info-link:active,
+.info-link:hover,
+.info-link:visited
+{
+    color: white;
+}
+
 #options
 {
     background-color: #bacfe6;
