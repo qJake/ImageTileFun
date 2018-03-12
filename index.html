@@ -64,9 +64,9 @@
                     <div class="ui blue floating circular label" ng-show="vm.showPostNum">{{card.postNum}}</div>
                     <div class="ui grey bottom attached mini itf-date label" title="{{card.datePostedFriendly}}" ng-show="vm.showDates">
                         <div class="ui right floated content">
-                            <a ng-href="{{card.permalink}}" target="_blank" style="color: white;">{{card.comments}} c</a>
-                            | <a ng-href="https://www.google.com/searchbyimage?image_url={{card.imageUrl}}&safe=off" title="Google Reverse Image Search" target="_blank">gi</a>
-                            | <a ng-href="https://www.yandex.com/images/search?rpt=imageview&img_url={{card.imageUrl}}" title="Yandex Image Search" target="_blank">ydx</a>
+                            <a class="info-link" ng-href="{{card.permalink}}" target="_blank">{{card.comments}} c</a>
+                            | <a class="info-link" ng-href="https://www.google.com/searchbyimage?image_url={{card.imageUrl}}&safe=off" title="Google Reverse Image Search" target="_blank">gi</a>
+                            | <a class="info-link" ng-href="https://www.yandex.com/images/search?rpt=imageview&img_url={{card.imageUrl}}" title="Yandex Image Search" target="_blank">ydx</a>
                         </div>
                         {{card.datePostedAgo}}
                     </div>
