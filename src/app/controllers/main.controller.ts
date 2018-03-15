@@ -1,3 +1,6 @@
+// Google Analytics
+declare function ga(a: any, b: any, c: any, d: any, e?: any, f?: any): any
+
 class MainController
 {
     private static INF_SCROLL_THRESHOLD = 500;
@@ -38,6 +41,8 @@ class MainController
             this.next = null;
             this.loadSubreddit(false);
             this.loadColor();
+            ga('send', 'event', 'itf', 'initialLoad')
+            ga('send', 'event', 'subreddit', this.subreddit)
         }
     }
 
@@ -87,6 +92,7 @@ class MainController
             if (window.scrollY + window.innerHeight >= document.body.scrollHeight - MainController.INF_SCROLL_THRESHOLD && !me.mainLoading && me.next)
             {
                 this.loadSubreddit(true);
+                ga('send', 'event', 'itd', 'loadMore')
             }
         })();
     }
