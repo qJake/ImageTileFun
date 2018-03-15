@@ -9,6 +9,7 @@ class MainController
     images: Array<IRedditImage> = [];
     next: string = '';
     count: number = 0;
+    color: string = RedditData.FALLBACK_COLOR;
 
     // Options
     showImages: boolean = true;
@@ -36,12 +37,13 @@ class MainController
             this.count = 0;
             this.next = null;
             this.loadSubreddit(false);
+            this.loadColor();
         }
     }
 
     loadKeyPressed($event: JQueryKeyEventObject): void
     {
-        if ($event.keyCode == JQuery.Key.Enter)
+        if ($event.keyCode === 13)
         {
             this.load();
         }
@@ -102,6 +104,11 @@ class MainController
             case "gif": return this.showGifs;
             default: return false;
         }
+    }
+
+    private loadColor(): void
+    {
+        this.redditData.GetSubredditColor(this.subreddit).then(c => this.color = c);
     }
 
     private loadSubreddit(append: boolean)

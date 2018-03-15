@@ -34,6 +34,7 @@ interface IPostMetadata
 class RedditData
 {
     static BASE_URL = 'https://www.reddit.com/r/';
+    static FALLBACK_COLOR = '#05427a';
     static DOMAIN_WHITELIST = [
         'i.redd.it',
         'i.imgur.com'
@@ -54,6 +55,14 @@ class RedditData
     static $inject = ['$http'];
 
     constructor(private $http: ng.IHttpService) { }
+
+    GetSubredditColor(subreddit: string): ng.IPromise<string>
+    {
+        return this.$http.get(`${RedditData.BASE_URL}${subreddit}/about.json`)
+        .then(d => {
+            return (d.data as any).data.primary_color || (d.data as any).data.key_color || RedditData.FALLBACK_COLOR;
+        });
+    }
 
     GetImagesFromSubreddit(subreddit: string, after: string, sort: string, postCount: number, count?: number): ng.IPromise<IRedditResponse>
     {
