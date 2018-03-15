@@ -45,6 +45,7 @@ Handles automatic CSS and file change reloading.
 * [ ] Subreddit info panel
 * [ ] Reorganize options into collapsible menu
 * [ ] Offer "Pinterest-style" vertical card flow / layout (minimizes whitespace)
+* [ ] Somehow detect and remove "removed" Reddit/Imgur images
 
 ## Credits
 
