@@ -21,6 +21,22 @@ A fun, purely client-based image browser for Reddit! &mdash; [http://imagetile.f
 * Select sort (Top, Hot, Controversial, etc)
 * Settings are saved in local browser storage for future visits
 
+## Built With
+
+TypeScript (2.7) and Angular 1.x.
+
+The repo should open cleanly in VS Code. I have not tested other IDEs.
+
+### Running Locally
+
+I recommend using [`live-server`](https://www.npmjs.com/package/live-server) installed globally, e.g.:
+
+* (`npm install -g live-server`)
+* `cd src`
+* `live-server`
+
+Handles automatic CSS and file change reloading.
+
 ## Wishlist
 
 [ ] Save recent subreddit list
