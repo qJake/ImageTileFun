@@ -14,6 +14,7 @@ class MainController {
         this.images = [];
         this.next = '';
         this.count = 0;
+        this.color = RedditData.FALLBACK_COLOR;
         // Options
         this.showImages = true;
         this.showGifs = false;
@@ -30,10 +31,11 @@ class MainController {
             this.count = 0;
             this.next = null;
             this.loadSubreddit(false);
+            this.loadColor();
         }
     }
     loadKeyPressed($event) {
-        if ($event.keyCode == 13 /* Enter */) {
+        if ($event.keyCode === 13) {
             this.load();
         }
     }
@@ -100,6 +102,9 @@ class MainController {
             case "gif": return this.showGifs;
             default: return false;
         }
+    }
+    loadColor() {
+        this.redditData.GetSubredditColor(this.subreddit).then(c => this.color = c);
     }
     loadSubreddit(append) {
         this.mainLoading = true;
@@ -231,6 +236,12 @@ class RedditData {
     constructor($http) {
         this.$http = $http;
     }
+    GetSubredditColor(subreddit) {
+        return this.$http.get(`${RedditData.BASE_URL}${subreddit}/about.json`)
+            .then(d => {
+            return d.data.data.primary_color || d.data.data.key_color || RedditData.FALLBACK_COLOR;
+        });
+    }
     GetImagesFromSubreddit(subreddit, after, sort, postCount, count) {
         let qs = ""; // TODO: Add querystring for continuation
         if (after && after.length > 0) {
@@ -298,6 +309,7 @@ class RedditData {
     }
 }
 RedditData.BASE_URL = 'https://www.reddit.com/r/';
+RedditData.FALLBACK_COLOR = '#05427a';
 RedditData.DOMAIN_WHITELIST = [
     'i.redd.it',
     'i.imgur.com'

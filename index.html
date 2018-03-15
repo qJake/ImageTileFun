@@ -9,6 +9,22 @@
     <div id="app" ng-controller="MainController as vm">
         <div id="options" class="ui form">
             <div class="field">
+                <svg version="1.1" id="Logo" class="ui image" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 201.333 133.333" enable-background="new 0 0 201.333 133.333" xml:space="preserve">
+                    <g>
+                        <rect x="-7.671" y="23.604" fill="none" width="213.56" height="117.796"/>
+                        <path ng-attr-fill="{{ vm.color }}" d="M24.387,23.603h17.712v87.822H24.387V23.603z"/>
+                        <path ng-attr-fill="{{ vm.color }}" d="M114.545,38.116H95.357v73.308H77.645V38.116H58.457V23.603h56.088V38.116z"/>
+                        <path ng-attr-fill="{{ vm.color }}"d="M179.119,23.603v14.514h-31.364V58.78h29.52v14.514h-29.52v38.13h-17.712V23.603H179.119z"/>
+                    </g>
+                    <line fill="none" ng-attr-stroke="{{ vm.color }}" stroke-width="13" stroke-linecap="square" stroke-miterlimit="10" x1="8.21" y1="8.044" x2="8.21" y2="119.061"/>
+                    <line fill="none" ng-attr-stroke="{{ vm.color }}" stroke-width="13" stroke-linecap="square" stroke-miterlimit="10" x1="194.239" y1="126.061" x2="136.755" y2="126.061"/>
+                    <line fill="none" ng-attr-stroke="{{ vm.color }}" stroke-width="13" stroke-linecap="square" stroke-miterlimit="10" x1="194.239" y1="125.061" x2="194.239" y2="14.044"/>
+                    <line fill="none" ng-attr-stroke="{{ vm.color }}" stroke-width="13" stroke-linecap="square" stroke-miterlimit="10" x1="194.239" y1="8.044" x2="136.755" y2="8.044"/>
+                    <line fill="none" ng-attr-stroke="{{ vm.color }}" stroke-width="13" stroke-linecap="square" stroke-miterlimit="10" x1="65.693" y1="125.84" x2="8.21" y2="125.84"/>
+                    <line fill="none" ng-attr-stroke="{{ vm.color }}" stroke-width="13" stroke-linecap="square" stroke-miterlimit="10" x1="65.693" y1="7.824" x2="8.21" y2="7.824"/>
+                </svg>
+            </div>
+            <div class="field">
                 <input type="text" placeholder="aww, cats, puppies, ..." ng-keypress="vm.loadKeyPressed($event)" ng-model="vm.subreddit" />
                 <select class="ui itf-sort select" ng-model="vm.sortOption">
                     <option value="_">Hot (default)</option>
@@ -19,7 +35,7 @@
                 </select>
                 <select class="ui itf-count select" ng-model="vm.postCount">
                     <option value="10">10</option>
-                    <option value="25" selected="selected">25</option>
+                    <option value="25">25</option>
                     <option value="50">50</option>
                     <option value="75">75</option>
                     <option value="100">100</option>
