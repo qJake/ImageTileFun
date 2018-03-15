@@ -40,6 +40,7 @@ Handles automatic CSS and file change reloading.
 ## Wishlist
 
 * [ ] Save recent subreddit list
+* [ ] Update styling for mobile
 * [ ] Add URL hash / routing for links to subreddits (e.g. `imagetile.fun#/r/wallpaper`)
 * [ ] Ability to clear / reset saved setting (right now, you can just clear your local storage)
 * [ ] Subreddit info panel
