@@ -29,3 +29,7 @@ A fun, purely client-based image browser for Reddit! &mdash; [http://imagetile.f
 [ ] Subreddit info panel
 [ ] Reorganize options into collapsible menu
 [ ] Offer "Pinterest-style" vertical card flow / layout (minimizes whitespace)
+
+## Credits
+
+* [jQuery Debounce plugin by Ben Alman](http://benalman.com/projects/jquery-throttle-debounce-plugin/)
