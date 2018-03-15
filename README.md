@@ -39,12 +39,12 @@ Handles automatic CSS and file change reloading.
 
 ## Wishlist
 
-[ ] Save recent subreddit list
-[ ] Add URL hash / routing for links to subreddits (e.g. `imagetile.fun#/r/wallpaper`)
-[ ] Ability to clear / reset saved setting (right now, you can just clear your local storage)
-[ ] Subreddit info panel
-[ ] Reorganize options into collapsible menu
-[ ] Offer "Pinterest-style" vertical card flow / layout (minimizes whitespace)
+* [ ] Save recent subreddit list
+* [ ] Add URL hash / routing for links to subreddits (e.g. `imagetile.fun#/r/wallpaper`)
+* [ ] Ability to clear / reset saved setting (right now, you can just clear your local storage)
+* [ ] Subreddit info panel
+* [ ] Reorganize options into collapsible menu
+* [ ] Offer "Pinterest-style" vertical card flow / layout (minimizes whitespace)
 
 ## Credits
 
