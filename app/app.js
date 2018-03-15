@@ -32,6 +32,8 @@ class MainController {
             this.next = null;
             this.loadSubreddit(false);
             this.loadColor();
+            ga('send', 'event', 'itf', 'initialLoad');
+            ga('send', 'event', 'subreddit', this.subreddit);
         }
     }
     loadKeyPressed($event) {
@@ -90,6 +92,7 @@ class MainController {
         $.debounce(2000, true, () => {
             if (window.scrollY + window.innerHeight >= document.body.scrollHeight - MainController.INF_SCROLL_THRESHOLD && !me.mainLoading && me.next) {
                 this.loadSubreddit(true);
+                ga('send', 'event', 'itd', 'loadMore');
             }
         })();
     }
