@@ -1,5 +1,5 @@
 // Google Analytics
-declare function ga(a: any, b: any, c: any, d: any, e?: any, f?: any): any
+declare function gtag(a: any, b: any, c: any, d: any, e?: any, f?: any): any
 
 class MainController
 {
@@ -21,6 +21,7 @@ class MainController
     showDates: boolean = false;
     showPostNum: boolean = false;
     cardsPerRow: number = 6;
+    showSeenFilter: boolean = false;
 
     static $inject = ['RedditData', 'DataPersistence', '$q'];
 
@@ -41,8 +42,8 @@ class MainController
             this.next = null;
             this.loadSubreddit(false);
             this.loadColor();
-            ga('send', 'event', 'itf', 'initialLoad')
-            ga('send', 'event', 'subreddit', this.subreddit)
+            gtag('send', 'event', 'itf', 'initialLoad')
+            gtag('send', 'event', 'subreddit', this.subreddit)
         }
     }
 
@@ -92,7 +93,7 @@ class MainController
             if (window.scrollY + window.innerHeight >= document.body.scrollHeight - MainController.INF_SCROLL_THRESHOLD && !me.mainLoading && me.next)
             {
                 this.loadSubreddit(true);
-                ga('send', 'event', 'itd', 'loadMore')
+                gtag('send', 'event', 'itd', 'loadMore')
             }
         })();
     }
@@ -110,6 +111,12 @@ class MainController
             case "gif": return this.showGifs;
             default: return false;
         }
+    }
+
+    resetSeen(): void
+    {
+        this.dataStore.SaveSeenList([]);
+        alert('Reset "seen" list!');
     }
 
     private loadColor(): void
@@ -165,6 +172,7 @@ class MainController
         this.showImages = settings.showImages;
         this.postCount = settings.postCount;
         this.sortOption = settings.sortOption;
+        this.showSeenFilter = settings.showSeenFilter;
         // Execute the card layout updater
         this.updateClassName(settings.cardsPerRow);
     }
@@ -179,7 +187,8 @@ class MainController
             showImages: this.showImages,
             showGifs: this.showGifs,
             postCount: this.postCount,
-            sortOption: this.sortOption
+            sortOption: this.sortOption,
+            showSeenFilter: this.showSeenFilter
         });
     }
 }
