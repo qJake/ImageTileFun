@@ -22,6 +22,7 @@ class MainController {
         this.showDates = false;
         this.showPostNum = false;
         this.cardsPerRow = 6;
+        this.showSeenFilter = false;
         $(document).on('scroll', () => this.infScrollHandler());
         this.loadSettings();
     }
@@ -32,8 +33,8 @@ class MainController {
             this.next = null;
             this.loadSubreddit(false);
             this.loadColor();
-            ga('send', 'event', 'itf', 'initialLoad');
-            ga('send', 'event', 'subreddit', this.subreddit);
+            gtag('send', 'event', 'itf', 'initialLoad');
+            gtag('send', 'event', 'subreddit', this.subreddit);
         }
     }
     loadKeyPressed($event) {
@@ -92,7 +93,7 @@ class MainController {
         $.debounce(2000, true, () => {
             if (window.scrollY + window.innerHeight >= document.body.scrollHeight - MainController.INF_SCROLL_THRESHOLD && !me.mainLoading && me.next) {
                 this.loadSubreddit(true);
-                ga('send', 'event', 'itd', 'loadMore');
+                gtag('send', 'event', 'itd', 'loadMore');
             }
         })();
     }
@@ -105,6 +106,10 @@ class MainController {
             case "gif": return this.showGifs;
             default: return false;
         }
+    }
+    resetSeen() {
+        this.dataStore.SaveSeenList([]);
+        alert('Reset "seen" list!');
     }
     loadColor() {
         this.redditData.GetSubredditColor(this.subreddit).then(c => this.color = c);
@@ -145,6 +150,7 @@ class MainController {
         this.showImages = settings.showImages;
         this.postCount = settings.postCount;
         this.sortOption = settings.sortOption;
+        this.showSeenFilter = settings.showSeenFilter;
         // Execute the card layout updater
         this.updateClassName(settings.cardsPerRow);
     }
@@ -157,7 +163,8 @@ class MainController {
             showImages: this.showImages,
             showGifs: this.showGifs,
             postCount: this.postCount,
-            sortOption: this.sortOption
+            sortOption: this.sortOption,
+            showSeenFilter: this.showSeenFilter
         });
     }
 }
@@ -232,12 +239,33 @@ class DataPersistence {
         }
         return null;
     }
+    SaveSeenList(seen) {
+        // de-dupe first
+        var uniqueSeen = seen.filter(function (item, i) {
+            return seen.indexOf(item) == i;
+        });
+        localStorage.setItem(DataPersistence.seenKey, JSON.stringify(uniqueSeen));
+    }
+    GetSeenList() {
+        var data = localStorage.getItem(DataPersistence.seenKey);
+        if (data && data.length) {
+            try {
+                return JSON.parse(data);
+            }
+            catch (_a) {
+                return [];
+            }
+        }
+        return [];
+    }
 }
 DataPersistence.settingsKey = "persistedSettings";
+DataPersistence.seenKey = "seenThings";
 app.service('DataPersistence', DataPersistence);
 class RedditData {
-    constructor($http) {
+    constructor($http, dataPersistence) {
         this.$http = $http;
+        this.dataPersistence = dataPersistence;
     }
     GetSubredditColor(subreddit) {
         return this.$http.get(`${RedditData.BASE_URL}${subreddit}/about.json`)
@@ -257,6 +285,7 @@ class RedditData {
         count += postCount;
         return this.$http.get(`${RedditData.BASE_URL}${subreddit}/${sort}.json?limit=${postCount}&count=${count - postCount}&${qs}`)
             .then(d => {
+            var seen = this.dataPersistence.GetSeenList();
             return {
                 before: d.data.data.before,
                 after: d.data.data.after,
@@ -264,6 +293,7 @@ class RedditData {
                 images: d.data.data.children
                     .map((post, i) => {
                     post.data.postNum = ((count + i) - (postCount - 1)).toString(); /* +100, -1 */
+                    post.data.seen = seen.indexOf(post.data.id) > -1;
                     post.data._metadata = this.getPostMetadata(post.data);
                     return post;
                 })
@@ -273,6 +303,7 @@ class RedditData {
                     var p = post.data;
                     return {
                         id: p.name,
+                        shortId: p.id,
                         postNum: p.postNum,
                         permalink: `https://www.reddit.com${p.permalink}`,
                         metadata: p._metadata,
@@ -282,9 +313,16 @@ class RedditData {
                         datestamp: p.created.toString(),
                         datePostedFriendly: moment.unix(p.created_utc).local().format("(YYYY) MMM Do @ h:mm a"),
                         datePostedAgo: moment.unix(p.created_utc).local().fromNow(),
+                        seen: p.seen
                     };
                 })
             };
+        })
+            .then(resp => {
+            var list = this.dataPersistence.GetSeenList();
+            var seenList = resp.images.map(i => i.shortId);
+            this.dataPersistence.SaveSeenList(list.concat(seenList));
+            return resp;
         });
     }
     getPostMetadata(post) {
@@ -329,5 +367,5 @@ RedditData.WHITELISTS = {
         'gifv'
     ]
 };
-RedditData.$inject = ['$http'];
+RedditData.$inject = ['$http', 'DataPersistence'];
 app.service('RedditData', RedditData);
