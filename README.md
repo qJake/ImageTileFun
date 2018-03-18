@@ -20,6 +20,8 @@ A fun, purely client-based image browser for Reddit! &mdash; [http://imagetile.f
 * Select number of posts to load per fetch ("per page")
 * Select sort (Top, Hot, Controversial, etc)
 * Settings are saved in local browser storage for future visits
+* Remembers images you have "seen" already and dims them (optional)
+* Shows subreddit info in the menu
 
 ## Built With
 
@@ -39,15 +41,24 @@ Handles automatic CSS and file change reloading.
 
 ## Wishlist
 
-* [ ] Save recent subreddit list
-* [x] Update styling for mobile
-* [x] Add URL hash / routing for links to subreddits (e.g. `imagetile.fun#/r/wallpaper`)
+* [ ] Save recent subreddit list / dropdown on textbox as you type
 * [ ] Ability to clear / reset saved setting (right now, you can just clear your local storage)
-* [x] Subreddit info panel
-* [x] Reorganize options into collapsible menu
 * [ ] Offer "Pinterest-style" vertical card flow / layout (minimizes whitespace)
 * [ ] Somehow detect and remove "removed" Reddit/Imgur images
 
+### Done
+
+* [x] Update styling for mobile
+* [x] Add URL hash / routing for links to subreddits (e.g. `imagetile.fun#/r/wallpaper`)
+* [x] Subreddit info panel
+* [x] Reorganize options into collapsible menu
+
 ## Credits
 
+Proudly developed with [**Semantic UI**](https://semantic-ui.com/) and [**AngularJS**](https://angularjs.org/).
+
+Also includes:
+
 * [jQuery Debounce plugin by Ben Alman](http://benalman.com/projects/jquery-throttle-debounce-plugin/)
+* [Moment.js](https://momentjs.com/)
+* [Markdown-It](https://github.com/markdown-it/markdown-it)
