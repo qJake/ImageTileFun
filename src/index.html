@@ -3,11 +3,12 @@
 <head>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.3.0/semantic.min.css" integrity="sha256-/mC8AIsSmTcTtaf8vgnfbZXZLYhJCd0b9If/M0Y5nDw=" crossorigin="anonymous" />
     <link rel="stylesheet" href="css/main.css?v=045195c2-29e9-4ebe-b423-d91ace06c407" type="text/css" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
 </head>
 <body ng-app="imagetilefun">
     <a id="top"></a>
     <div id="app" ng-controller="MainController as vm">
-        <div id="options" class="ui form">
+        <div id="options" class="ui form" ng-click="vm.closeMenu($event)">
             <div class="field">
                 <svg version="1.1" id="Logo" class="ui image" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 201.333 133.333" enable-background="new 0 0 201.333 133.333" xml:space="preserve">
                     <g>
@@ -24,18 +25,86 @@
                     <line fill="none" ng-attr-stroke="{{ vm.color }}" stroke-width="13" stroke-linecap="square" stroke-miterlimit="10" x1="65.693" y1="7.824" x2="8.21" y2="7.824"/>
                 </svg>
             </div>
+
+            <div class="field">
+                <button class="ui large primary circular icon button" ng-click="vm.menuToggle($event)">
+                    <i class="bars icon" ng-show="!vm.isMenuOpen"></i>
+                    <i class="up arrow icon" ng-show="vm.isMenuOpen"></i>
+                </button>
+                <div class="ui vertical main menu" ng-show="vm.isMenuOpen">
+                    <div class="ui two column internally celled stackable grid">
+                        <div class="row">
+                            <div class="column">
+                                <div class="item">
+                                    <input id="showTitles" type="checkbox" ng-model="vm.showTitles" ng-change="vm.basicChangedHandler()" />
+                                    <label for="showTitles">Show Titles</label>
+                                </div>
+                                <div class="item">
+                                    <input id="showDates" type="checkbox" ng-model="vm.showDates" ng-change="vm.basicChangedHandler()" />
+                                    <label for="showDates">Show Date/Comments</label>
+                                </div>
+                                <div class="item">
+                                    <input id="showPostNum" type="checkbox" ng-model="vm.showPostNum" ng-change="vm.basicChangedHandler()" />
+                                    <label for="showPostNum">Show Post #s</label>
+                                </div>
+                                <div class="item">
+                                    <input id="showSeenFilter" type="checkbox" ng-model="vm.showSeenFilter" ng-change="vm.basicChangedHandler()" />
+                                    <label for="showSeenFilter">Dim "Seen" posts ({{ vm.seenCount.toLocaleString() }}) &ndash; <a ng-click="vm.resetSeen()">reset</a></label>
+                                </div>
+                                <div class="item no-mobile">
+                                    <label for="cardsPerRow">Cards per row</label>
+                                    <input id="cardsPerRow" type="range" min="3" max="12" ng-change="vm.updateClassName(vm.cardsPerRow)" ng-model="vm.cardsPerRow" /> <span>{{vm.cardsPerRow}}</span>
+                                </div>
+                                <div class="item only-mobile">
+                                    <label><em>Cards per row unavailable on mobile</em></label>
+                                </div>
+                                <div class="item">
+                                    <input id="showImages" type="checkbox" ng-model="vm.showImages" ng-change="vm.basicChangedHandler()" />
+                                    <label for="showImages">Show Images</label>
+                                </div>
+                                <div class="item">
+                                    <input id="showGifs" type="checkbox" ng-model="vm.showGifs" ng-change="vm.basicChangedHandler()" />
+                                    <label for="showGifs">Show GIFs/GIFVs</label>
+                                </div>
+                                <div class="dimmed right aligned item">
+                                    <small><span title="Released 2018-03-18">v1.1</span> &mdash; Open source on <a href="https://github.com/qjake/imagetilefun" target="_blank"><i class="large fitted github icon"></i> GitHub</a></small>
+                                </div>
+                            </div>
+                            <div class="column">
+                                <div class="header" ng-show="vm.subredditInfo == null">
+                                    <em>Subreddit info will appear here once loaded.</em>
+                                </div>
+                                <div class="content" ng-show="vm.subredditInfo != null">
+                                    <div class="large header">
+                                        <h2>/r/{{ vm.subredditInfo.name }}</h2>
+                                        <p>{{ vm.subredditInfo.title }}</p>
+                                    </div>
+                                    <div class="ui horizontal divider header">Description</div>
+                                    <div class="description" ng-if="!vm.showExtDesc" ng-bind-html="vm.subredditInfo.description | trim: 310 | markdown"></div>
+                                    <div class="description" ng-if="vm.showExtDesc" ng-bind-html="vm.subredditInfo.description | markdown"></div>
+                                    <a ng-if="!vm.showExtDesc" ng-click="vm.showMoreDesc($event)">(more)</a>
+                                    <a ng-if="vm.showExtDesc" ng-click="vm.showLessDesc($event)">(less)</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
             <div class="field">
                 <input type="text" placeholder="aww, cats, puppies, ..." ng-keypress="vm.loadKeyPressed($event)" ng-model="vm.subreddit" />
-                <select class="ui itf-sort select" ng-model="vm.sortOption">
-                    <option value="_">Hot (default)</option>
+                <select class="ui itf-sort select" ng-model="vm.sortOption" ng-change="vm.basicChangedHandler()">
+                    <option value="_" selected="selected">Hot (default)</option>
                     <option value="new">New</option>
                     <option value="rising">Rising</option>
                     <option value="controversial">Controversial</option>
                     <option value="top">Top</option>
                 </select>
-                <select class="ui itf-count select" ng-model="vm.postCount">
+            </div>
+            <div class="field">
+                <select class="ui itf-count select" ng-model="vm.postCount" ng-change="vm.basicChangedHandler()">
                     <option value="10">10</option>
-                    <option value="25">25</option>
+                    <option value="25" selected="selected">25</option>
                     <option value="50">50</option>
                     <option value="75">75</option>
                     <option value="100">100</option>
@@ -43,39 +112,10 @@
                 <button type="button" class="ui right attached icon labeled primary button" ng-class="{'disabled': vm.mainLoading}" ng-click="vm.load()">
                     <i class="right arrow icon"></i>
                     Go
-                </button>
-            </div>
-            <div class="field">
-                <input type="checkbox" ng-model="vm.showTitles" ng-change="vm.basicChangedHandler()" />
-                <label>Show Titles</label>
-            </div>
-            <div class="field">
-                <input type="checkbox" ng-model="vm.showDates" ng-change="vm.basicChangedHandler()" />
-                <label>Show Date/Comments</label>
-            </div>
-            <div class="field">
-                <input type="checkbox" ng-model="vm.showPostNum" ng-change="vm.basicChangedHandler()" />
-                <label>Show Post #s</label>
-            </div>
-            <div class="field">
-                <input type="checkbox" ng-model="vm.showSeenFilter" ng-change="vm.basicChangedHandler()" />
-                <label>Dim "Seen" (<a ng-click="vm.resetSeen()">reset</a>)</label>
-            </div>
-            <div class="field no-mobile">
-                <label>Cards per row</label>
-                <input type="range" min="3" max="12" ng-change="vm.updateClassName(vm.cardsPerRow)" ng-model="vm.cardsPerRow" /> <span>{{vm.cardsPerRow}}</span>
-            </div>
-            <div class="field">
-                <label>Include:</label>
-                <div class="field">
-                    <input type="checkbox" ng-model="vm.showImages" ng-change="vm.basicChangedHandler()" />
-                    <label>Images</label>
-                </div>
-                <input type="checkbox" ng-model="vm.showGifs" ng-change="vm.basicChangedHandler()" />
-                <label>GIFs/GIFVs</label>
+                </button>        
             </div>
         </div>
-        <div id="results" class="ui stackable six column grid">
+        <div id="results" class="ui stackable six column grid" ng-click="vm.closeMenu($event)">
             <div class="middle aligned column" ng-repeat="card in vm.images" ng-if="vm.showClass(card.metadata.class)">
                 <div class="ui fluid card" ng-class="{'disabled': card.seen && vm.showSeenFilter}">
                     <div class="ui inverted active dimmer" ng-show="card.isLoading">
@@ -113,6 +153,7 @@
     </div>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.4/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PreloadJS/1.0.1/preloadjs.min.js" integrity="sha256-ZZq6dK95V2jZ2NLtaI5JzV9H2UJdWhYwMpqEV1m0WR0=" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/markdown-it/8.4.1/markdown-it.js" integrity="sha256-8q4KkJo+qo008C39XicdTM0vprJWCicBwOF+Z58XNHM=" crossorigin="anonymous"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.21.0/moment.min.js" integrity="sha256-9YAuB2VnFZNJ+lKfpaQ3dKQT9/C0j3VUla76hHbiVF8=" crossorigin="anonymous"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.3.0/semantic.min.js" integrity="sha256-FMQoXFhCWeNb139Wa9Z2I0UjqDeKKDYY+6PLkWv4qco=" crossorigin="anonymous"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.6.5/angular.min.js" integrity="sha256-zBy1l2WBAh2vPF8rnjFMUXujsfkKjya0Jy5j6yKj0+Q=" crossorigin="anonymous"></script>

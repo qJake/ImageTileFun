@@ -3,10 +3,12 @@ $(function () {
     $('.ui.select').dropdown();
 });
 class MainController {
-    constructor(redditData, dataStore, $q) {
+    constructor(redditData, dataStore, globalEvent, $q, $rootScope) {
         this.redditData = redditData;
         this.dataStore = dataStore;
+        this.globalEvent = globalEvent;
         this.$q = $q;
+        this.$rootScope = $rootScope;
         this.subreddit = '';
         this.sortOption = '_';
         this.postCount = 100;
@@ -15,6 +17,10 @@ class MainController {
         this.next = '';
         this.count = 0;
         this.color = RedditData.FALLBACK_COLOR;
+        this.isMenuOpen = false;
+        this.seenCount = 0;
+        this.subredditInfo = null;
+        this.showExtDesc = false;
         // Options
         this.showImages = true;
         this.showGifs = false;
@@ -25,6 +31,9 @@ class MainController {
         this.showSeenFilter = false;
         $(document).on('scroll', () => this.infScrollHandler());
         this.loadSettings();
+        this.loadFromUrl();
+        // Subscribe to hash changed event
+        $rootScope.$on('hashchange', () => this.loadFromUrl());
     }
     load() {
         if (this.subreddit && this.subreddit.length > 0) {
@@ -32,9 +41,10 @@ class MainController {
             this.count = 0;
             this.next = null;
             this.loadSubreddit(false);
-            this.loadColor();
+            this.loadSubredditInfo();
             gtag('send', 'event', 'itf', 'initialLoad');
             gtag('send', 'event', 'subreddit', this.subreddit);
+            window.location.hash = "/r/" + this.subreddit;
         }
     }
     loadKeyPressed($event) {
@@ -108,11 +118,45 @@ class MainController {
         }
     }
     resetSeen() {
-        this.dataStore.SaveSeenList([]);
-        alert('Reset "seen" list!');
+        if (confirm('Are you sure you want to clear your "Seen" list?\r\nThis cannot be undone.')) {
+            this.dataStore.SaveSeenList([]);
+            this.images = this.images.map(i => {
+                i.seen = false;
+                return i;
+            });
+            this.updateSeenCount();
+        }
     }
-    loadColor() {
-        this.redditData.GetSubredditColor(this.subreddit).then(c => this.color = c);
+    menuToggle($event) {
+        this.isMenuOpen = !this.isMenuOpen;
+        this.noBubble($event);
+    }
+    closeMenu($event) {
+        if ($($event.target).parents('.ui.main.menu').length > 0) {
+            return;
+        }
+        this.isMenuOpen = false;
+    }
+    showMoreDesc($event) {
+        this.showExtDesc = true;
+        this.noBubble($event);
+    }
+    showLessDesc($event) {
+        this.showExtDesc = false;
+        this.noBubble($event);
+    }
+    loadFromUrl() {
+        var hash = window.location.hash.slice(1);
+        if (hash.length > 0 && /^\/r\/[a-z0-9_]+$/i.test(hash)) {
+            this.subreddit = hash.slice(3);
+            this.load();
+        }
+    }
+    loadSubredditInfo() {
+        this.redditData.GetSubredditInfo(this.subreddit).then(i => {
+            this.subredditInfo = i;
+            this.color = i.color;
+        });
     }
     loadSubreddit(append) {
         this.mainLoading = true;
@@ -129,6 +173,8 @@ class MainController {
             this.mainLoading = false;
             // In case we get too few results, start loading the next ones
             this.infScrollHandler();
+            // Update 'seen'
+            this.updateSeenCount();
             // Find and remove "removed.png"
             $('#results img').each((i, e) => {
                 if ($(e).attr('src').endsWith('removed.png')) {
@@ -167,9 +213,18 @@ class MainController {
             showSeenFilter: this.showSeenFilter
         });
     }
+    updateSeenCount() {
+        this.seenCount = this.dataStore.GetSeenList().length;
+    }
+    noBubble($event) {
+        $event.stopPropagation();
+        $event.preventDefault();
+        $event.cancelBubble = true;
+        $event.returnValue = false;
+    }
 }
 MainController.INF_SCROLL_THRESHOLD = 500;
-MainController.$inject = ['RedditData', 'DataPersistence', '$q'];
+MainController.$inject = ['RedditData', 'DataPersistence', 'GlobalEvent', '$q', '$rootScope'];
 app.controller('MainController', MainController);
 /*!
  * jQuery throttle / debounce - v1.1 - 3/7/2010
@@ -262,15 +317,36 @@ class DataPersistence {
 DataPersistence.settingsKey = "persistedSettings";
 DataPersistence.seenKey = "seenThings";
 app.service('DataPersistence', DataPersistence);
+class GlobalEvent {
+    constructor($window, $rootScope) {
+        $window.addEventListener("hashchange", () => $rootScope.$broadcast('hashchange'), false);
+    }
+}
+GlobalEvent.$inject = ['$window', '$rootScope'];
+app.service('GlobalEvent', GlobalEvent);
+class MarkdownFilter {
+    static filter($sce) {
+        return (input) => $sce.trustAsHtml(markdownit().render(input));
+    }
+}
+MarkdownFilter.$inject = ['$sce'];
+app.filter('markdown', MarkdownFilter.filter);
 class RedditData {
     constructor($http, dataPersistence) {
         this.$http = $http;
         this.dataPersistence = dataPersistence;
     }
-    GetSubredditColor(subreddit) {
+    GetSubredditInfo(subreddit) {
         return this.$http.get(`${RedditData.BASE_URL}${subreddit}/about.json`)
             .then(d => {
-            return d.data.data.primary_color || d.data.data.key_color || RedditData.FALLBACK_COLOR;
+            var info = d.data.data;
+            return {
+                color: info.primary_color || info.key_color || RedditData.FALLBACK_COLOR,
+                title: info.title,
+                description: info.description,
+                name: info.display_name,
+                subscribers: info.subscribers
+            };
         });
     }
     GetImagesFromSubreddit(subreddit, after, sort, postCount, count) {
@@ -369,3 +445,9 @@ RedditData.WHITELISTS = {
 };
 RedditData.$inject = ['$http', 'DataPersistence'];
 app.service('RedditData', RedditData);
+class TrimFilter {
+    static filter() {
+        return (input, len) => input && input.length < len ? input : input.slice(0, len) + "...";
+    }
+}
+app.filter('trim', TrimFilter.filter);

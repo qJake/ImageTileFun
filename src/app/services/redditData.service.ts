@@ -2,6 +2,15 @@
 // Typings with CDN links suck.
 declare var moment: any;
 
+interface ISubredditInfo
+{
+    name: string;
+    subscribers: number;
+    title: string;
+    description: string;
+    color: string;
+}
+
 interface IRedditResponse
 {
     before: string;
@@ -59,11 +68,18 @@ class RedditData
     constructor(private $http: ng.IHttpService,
                 private dataPersistence: DataPersistence) { }
 
-    GetSubredditColor(subreddit: string): ng.IPromise<string>
+    GetSubredditInfo(subreddit: string): ng.IPromise<ISubredditInfo>
     {
         return this.$http.get(`${RedditData.BASE_URL}${subreddit}/about.json`)
         .then(d => {
-            return (d.data as any).data.primary_color || (d.data as any).data.key_color || RedditData.FALLBACK_COLOR;
+            var info = (d.data as any).data;
+            return <ISubredditInfo>{
+                color: info.primary_color || info.key_color || RedditData.FALLBACK_COLOR,
+                title: info.title,
+                description: info.description,
+                name: info.display_name,
+                subscribers: info.subscribers
+            };
         });
     }
 

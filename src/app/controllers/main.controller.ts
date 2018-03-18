@@ -13,6 +13,10 @@ class MainController
     next: string = '';
     count: number = 0;
     color: string = RedditData.FALLBACK_COLOR;
+    isMenuOpen: boolean = false;
+    seenCount: number = 0;
+    subredditInfo: ISubredditInfo = null;
+    showExtDesc: boolean = false;
 
     // Options
     showImages: boolean = true;
@@ -23,14 +27,20 @@ class MainController
     cardsPerRow: number = 6;
     showSeenFilter: boolean = false;
 
-    static $inject = ['RedditData', 'DataPersistence', '$q'];
+    static $inject = ['RedditData', 'DataPersistence', 'GlobalEvent', '$q', '$rootScope'];
 
     constructor(private redditData: RedditData,
                 private dataStore: DataPersistence,
-                private $q: ng.IQService)
+                private globalEvent: GlobalEvent,
+                private $q: ng.IQService,
+                private $rootScope: ng.IRootScopeService)
     { 
         $(document).on('scroll', () => this.infScrollHandler());
         this.loadSettings();
+        this.loadFromUrl();
+
+        // Subscribe to hash changed event
+        $rootScope.$on('hashchange', () => this.loadFromUrl());
     }
 
     load(): void
@@ -41,9 +51,10 @@ class MainController
             this.count = 0;
             this.next = null;
             this.loadSubreddit(false);
-            this.loadColor();
-            gtag('send', 'event', 'itf', 'initialLoad')
-            gtag('send', 'event', 'subreddit', this.subreddit)
+            this.loadSubredditInfo();
+            gtag('send', 'event', 'itf', 'initialLoad');
+            gtag('send', 'event', 'subreddit', this.subreddit);
+            window.location.hash = "/r/" + this.subreddit;
         }
     }
 
@@ -115,13 +126,60 @@ class MainController
 
     resetSeen(): void
     {
-        this.dataStore.SaveSeenList([]);
-        alert('Reset "seen" list!');
+        if (confirm('Are you sure you want to clear your "Seen" list?\r\nThis cannot be undone.'))
+        {
+            this.dataStore.SaveSeenList([]);
+            this.images = this.images.map(i => {
+                i.seen = false;
+                return i;
+            });
+            this.updateSeenCount();
+        }
     }
 
-    private loadColor(): void
+    menuToggle($event: Event): void
     {
-        this.redditData.GetSubredditColor(this.subreddit).then(c => this.color = c);
+        this.isMenuOpen = !this.isMenuOpen;
+        this.noBubble($event);
+    }
+
+    closeMenu($event: Event): void 
+    {
+        if ($($event.target).parents('.ui.main.menu').length > 0)
+        {
+            return;
+        }
+        this.isMenuOpen = false;
+    }
+
+    showMoreDesc($event: Event): void
+    {
+        this.showExtDesc = true;
+        this.noBubble($event);
+    }
+
+    showLessDesc($event: Event): void
+    {
+        this.showExtDesc = false;
+        this.noBubble($event);
+    }
+
+    private loadFromUrl()
+    {
+        var hash = window.location.hash.slice(1);
+        if (hash.length > 0 && /^\/r\/[a-z0-9_]+$/i.test(hash))
+        {
+            this.subreddit = hash.slice(3);
+            this.load();
+        }
+    }
+
+    private loadSubredditInfo(): void
+    {
+        this.redditData.GetSubredditInfo(this.subreddit).then(i => {
+            this.subredditInfo = i;
+            this.color = i.color;
+        });
     }
 
     private loadSubreddit(append: boolean)
@@ -146,6 +204,9 @@ class MainController
 
             // In case we get too few results, start loading the next ones
             this.infScrollHandler();
+
+            // Update 'seen'
+            this.updateSeenCount();
 
             // Find and remove "removed.png"
             $('#results img').each((i, e) => {
@@ -190,6 +251,19 @@ class MainController
             sortOption: this.sortOption,
             showSeenFilter: this.showSeenFilter
         });
+    }
+
+    private updateSeenCount(): void
+    {
+        this.seenCount = this.dataStore.GetSeenList().length;
+    }
+
+    private noBubble($event: Event)
+    {
+        $event.stopPropagation();
+        $event.preventDefault();
+        $event.cancelBubble = true;
+        $event.returnValue = false;
     }
 }
 app.controller('MainController', MainController);
