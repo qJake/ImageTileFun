@@ -17,6 +17,7 @@ class MainController
     seenCount: number = 0;
     subredditInfo: ISubredditInfo = null;
     showExtDesc: boolean = false;
+    lastLoadedOn: Date = new Date(1);
 
     // Options
     showImages: boolean = true;
