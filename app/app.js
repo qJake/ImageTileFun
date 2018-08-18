@@ -21,6 +21,7 @@ class MainController {
         this.seenCount = 0;
         this.subredditInfo = null;
         this.showExtDesc = false;
+        this.lastLoadedOn = new Date(1);
         // Options
         this.showImages = true;
         this.showGifs = false;
@@ -326,7 +327,7 @@ GlobalEvent.$inject = ['$window', '$rootScope'];
 app.service('GlobalEvent', GlobalEvent);
 class MarkdownFilter {
     static filter($sce) {
-        return (input) => $sce.trustAsHtml(markdownit().render(input));
+        return (input) => $sce.trustAsHtml(markdownit().render(input).replace(/href=\"\/r\//gi, 'href="#/r/'));
     }
 }
 MarkdownFilter.$inject = ['$sce'];
@@ -335,6 +336,7 @@ class RedditData {
     constructor($http, dataPersistence) {
         this.$http = $http;
         this.dataPersistence = dataPersistence;
+        this.thisSession = [];
     }
     GetSubredditInfo(subreddit) {
         return this.$http.get(`${RedditData.BASE_URL}${subreddit}/about.json`)
@@ -345,7 +347,8 @@ class RedditData {
                 title: info.title,
                 description: info.description,
                 name: info.display_name,
-                subscribers: info.subscribers
+                subscribers: info.subscribers,
+                icon: info.icon_img
             };
         });
     }
@@ -358,6 +361,11 @@ class RedditData {
         if (sort && sort.length) {
             qs += "&t=all";
         }
+        // Clear "this" list if count is 0.
+        if (count === 0) {
+            console.info("Clearing current session cached IDs.");
+            this.thisSession = [];
+        }
         count += postCount;
         return this.$http.get(`${RedditData.BASE_URL}${subreddit}/${sort}.json?limit=${postCount}&count=${count - postCount}&${qs}`)
             .then(d => {
@@ -368,8 +376,12 @@ class RedditData {
                 count: count,
                 images: d.data.data.children
                     .map((post, i) => {
+                    // Store what just came back in a cache so the new stuff isn't dimmed
+                    if (seen.indexOf(post.data.id) === -1) {
+                        this.thisSession.push(post.data.id);
+                    }
                     post.data.postNum = ((count + i) - (postCount - 1)).toString(); /* +100, -1 */
-                    post.data.seen = seen.indexOf(post.data.id) > -1;
+                    post.data.seen = seen.indexOf(post.data.id) > -1 && this.thisSession.indexOf(post.data.id) === -1;
                     post.data._metadata = this.getPostMetadata(post.data);
                     return post;
                 })
@@ -409,10 +421,10 @@ class RedditData {
         };
         var url = document.createElement('a');
         url.href = post.url;
-        if (RedditData.WHITELISTS.images.some(ext => url.pathname.endsWith(ext))) {
+        if (RedditData.WHITELISTS.images.some(pattern => new RegExp(pattern).test(url.pathname))) {
             m.class = 'image';
         }
-        else if (RedditData.WHITELISTS.gifs.some(ext => url.pathname.endsWith(ext))) {
+        else if (RedditData.WHITELISTS.gifs.some(pattern => new RegExp(pattern).test(url.pathname))) {
             m.class = 'gif';
             if (url.href.endsWith('.gifv')) {
                 m.displayAs = 'image';
@@ -428,8 +440,10 @@ class RedditData {
 RedditData.BASE_URL = 'https://www.reddit.com/r/';
 RedditData.FALLBACK_COLOR = '#05427a';
 RedditData.DOMAIN_WHITELIST = [
-    'i.redd.it',
-    'i.imgur.com'
+    'i\\.redd\\.it',
+    'i\\.imgur\\.com',
+    '.+\\.media\\.tumblr\\.com',
+    '.+\\.deviantart\\.net'
 ];
 RedditData.WHITELISTS = {
     'images': [
@@ -447,7 +461,7 @@ RedditData.$inject = ['$http', 'DataPersistence'];
 app.service('RedditData', RedditData);
 class TrimFilter {
     static filter() {
-        return (input, len) => input && input.length < len ? input : input.slice(0, len) + "...";
+        return (input, len) => typeof input !== 'undefined' && input && input.length < len ? input : input.slice(0, len) + "...";
     }
 }
 app.filter('trim', TrimFilter.filter);

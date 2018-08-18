@@ -8,6 +8,17 @@ svg#Logo
     height: 37px;
 }
 
+.sr-icon,
+.sr-icon img
+{
+    max-height: 37px;
+}
+
+.sr-icon
+{
+    margin-right: 0.75rem;
+}
+
 .itf-date
 {
     z-index: 5;
@@ -40,6 +51,12 @@ svg#Logo
     left: 2rem;
     min-width: 650px;
     z-index: 20;
+}
+
+.scrollable.column
+{
+    overflow-y: auto;
+    max-height: 60vh;
 }
 
 input[type="range"]
@@ -95,6 +112,11 @@ input[type="range"]
     padding: 0 1rem;
 }
 
+#results .ui.card
+{
+    min-height: 50px;
+}
+
 .disabled.card
 {
     opacity: 0.3;
@@ -124,6 +146,11 @@ div.visible.menu
     width: 100%;
 }
 
+#results
+{
+    min-height: 90vh;
+}
+
 /* Angular helpers */
 a[ng-click]
 {
@@ -141,11 +168,11 @@ input::-webkit-inner-spin-button
     -webkit-appearance: none;
 }
 
-
 #options .only-mobile
 {
     display: none;
 }
+
 /* Mobile stuff */
 @media screen and (max-width: 767px)
 {
