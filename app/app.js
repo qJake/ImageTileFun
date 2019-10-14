@@ -1,11 +1,13 @@
 var app = angular.module('imagetilefun', []);
 $(function () {
-    $('.ui.select').dropdown();
+    $('.ui.select.non-stick').dropdown({ action: 'hide' });
+    $('.ui.select').not('.non-stick').dropdown();
 });
 class MainController {
-    constructor(redditData, dataStore, globalEvent, $q, $rootScope) {
+    constructor(redditData, dataStore, favoriteService, globalEvent, $q, $rootScope) {
         this.redditData = redditData;
         this.dataStore = dataStore;
+        this.favoriteService = favoriteService;
         this.globalEvent = globalEvent;
         this.$q = $q;
         this.$rootScope = $rootScope;
@@ -146,6 +148,23 @@ class MainController {
         this.showExtDesc = false;
         this.noBubble($event);
     }
+    loadFavorites() {
+        this.favorites = this.favoriteService.loadFavorites().sort((a, b) => a.name[0] > b.name[0] ? 1 : -1);
+        this.isCurrentFavorite = this.favorites.some(e => e.name.toLowerCase() === this.subredditInfo.name.toLowerCase());
+    }
+    favoriteChanged() {
+        this.subreddit = this.selectedFavorite;
+        this.load();
+        return false;
+    }
+    addFavorite() {
+        this.favoriteService.addFavorite({ name: this.subredditInfo.name, desc: this.subredditInfo.title });
+        this.loadFavorites();
+    }
+    removeFavorite() {
+        this.favoriteService.removeFavorite(this.subredditInfo.name);
+        this.loadFavorites();
+    }
     loadFromUrl() {
         var hash = window.location.hash.slice(1);
         if (hash.length > 0 && /^\/r\/[a-z0-9_]+$/i.test(hash)) {
@@ -157,6 +176,7 @@ class MainController {
         this.redditData.GetSubredditInfo(this.subreddit).then(i => {
             this.subredditInfo = i;
             this.color = i.color;
+            this.loadFavorites();
         });
     }
     loadSubreddit(append) {
@@ -225,7 +245,7 @@ class MainController {
     }
 }
 MainController.INF_SCROLL_THRESHOLD = 500;
-MainController.$inject = ['RedditData', 'DataPersistence', 'GlobalEvent', '$q', '$rootScope'];
+MainController.$inject = ['RedditData', 'DataPersistence', 'FavoriteService', 'GlobalEvent', '$q', '$rootScope'];
 app.controller('MainController', MainController);
 /*!
  * jQuery throttle / debounce - v1.1 - 3/7/2010
@@ -318,6 +338,37 @@ class DataPersistence {
 DataPersistence.settingsKey = "persistedSettings";
 DataPersistence.seenKey = "seenThings";
 app.service('DataPersistence', DataPersistence);
+class FavoriteService {
+    loadFavorites() {
+        const favStr = localStorage.getItem(FavoriteService.FavoriteKey);
+        if (typeof favStr !== 'string' || !favStr || !favStr.length) {
+            return [];
+        }
+        return JSON.parse(favStr);
+    }
+    saveFavorites(favs) {
+        localStorage.setItem(FavoriteService.FavoriteKey, JSON.stringify(favs));
+    }
+    addFavorite(fav) {
+        var favs = this.loadFavorites();
+        if (this.containsFavorite(favs, fav.name))
+            return;
+        favs.push(fav);
+        this.saveFavorites(favs);
+    }
+    removeFavorite(name) {
+        var favs = this.loadFavorites();
+        if (!this.containsFavorite(favs, name))
+            return;
+        favs = favs.filter(e => e.name.toLowerCase() !== name.toLowerCase());
+        this.saveFavorites(favs);
+    }
+    containsFavorite(favs, name) {
+        return favs.some(e => e.name.toLowerCase() === name.toLowerCase());
+    }
+}
+FavoriteService.FavoriteKey = "FavoriteList";
+app.service('FavoriteService', FavoriteService);
 class GlobalEvent {
     constructor($window, $rootScope) {
         $window.addEventListener("hashchange", () => $rootScope.$broadcast('hashchange'), false);
@@ -461,7 +512,7 @@ RedditData.$inject = ['$http', 'DataPersistence'];
 app.service('RedditData', RedditData);
 class TrimFilter {
     static filter() {
-        return (input, len) => typeof input !== 'undefined' && input && input.length < len ? input : input.slice(0, len) + "...";
+        return (input, len) => typeof input !== 'undefined' ? input && input.length < len ? input : input.slice(0, len) + "..." : '';
     }
 }
 app.filter('trim', TrimFilter.filter);

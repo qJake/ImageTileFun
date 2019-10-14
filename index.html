@@ -71,7 +71,7 @@
                                     <label for="showGifs">Show GIFs/GIFVs</label>
                                 </div>
                                 <div class="dimmed right aligned item">
-                                    <small><span title="Released 2018-08-17">v1.2</span> &mdash; Open source on <a href="https://github.com/qjake/imagetilefun" target="_blank"><i class="large fitted github icon"></i> GitHub</a></small>
+                                    <small><span title="Released 2019-10-13">v1.3</span> &mdash; Open source on <a href="https://github.com/qjake/imagetilefun" target="_blank"><i class="large fitted github icon"></i> GitHub</a></small>
                                 </div>
                             </div>
                             <div class="scrollable column">
@@ -117,6 +117,19 @@
                     <i class="right arrow icon"></i>
                     Go
                 </button>        
+            </div>
+            <div class="field">
+                <select class="ui non-stick select" ng-model="vm.selectedFavorite" ng-options="f.name as (f.name + ' &ndash; ' + f.desc) for f in vm.favorites track by f.name" ng-change="vm.favoriteChanged()">
+                    <option value="">- load a favorite -</option>
+                </select>
+                <button type="button" class="ui right attached green icon labeled button" ng-click="vm.addFavorite()" ng-show="!vm.isCurrentFavorite" ng-disabled="vm.mainLoading">
+                    <i class="star plus icon"></i>
+                    Favorite
+                </button>
+                <button type="button" class="ui right attached red icon labeled button" ng-click="vm.removeFavorite()" ng-show="vm.isCurrentFavorite" ng-disabled="vm.mainLoading">
+                    <i class="star outline icon"></i>
+                    Favorite
+                </button>
             </div>
         </div>
         <div id="results" class="ui stackable six column grid" ng-click="vm.closeMenu($event)">
