@@ -18,6 +18,9 @@ class MainController
     subredditInfo: ISubredditInfo = null;
     showExtDesc: boolean = false;
     lastLoadedOn: Date = new Date(1);
+    favorites: IFavorite[];
+    selectedFavorite: string;
+    isCurrentFavorite: boolean;
 
     // Options
     showImages: boolean = true;
@@ -28,10 +31,11 @@ class MainController
     cardsPerRow: number = 6;
     showSeenFilter: boolean = false;
 
-    static $inject = ['RedditData', 'DataPersistence', 'GlobalEvent', '$q', '$rootScope'];
+    static $inject = ['RedditData', 'DataPersistence', 'FavoriteService', 'GlobalEvent', '$q', '$rootScope'];
 
     constructor(private redditData: RedditData,
                 private dataStore: DataPersistence,
+                private favoriteService: FavoriteService,
                 private globalEvent: GlobalEvent,
                 private $q: ng.IQService,
                 private $rootScope: ng.IRootScopeService)
@@ -165,6 +169,31 @@ class MainController
         this.noBubble($event);
     }
 
+    loadFavorites(): void
+    {
+        this.favorites = this.favoriteService.loadFavorites().sort((a, b) => a.name[0] > b.name[0] ? 1 : -1);
+        this.isCurrentFavorite = this.favorites.some(e => e.name.toLowerCase() === this.subredditInfo.name.toLowerCase());
+    }
+
+    favoriteChanged(): boolean
+    {
+        this.subreddit = this.selectedFavorite;
+        this.load();
+        return false;
+    }
+
+    addFavorite(): void
+    {
+        this.favoriteService.addFavorite({name: this.subredditInfo.name, desc: this.subredditInfo.title});
+        this.loadFavorites();
+    }
+
+    removeFavorite(): void
+    {
+        this.favoriteService.removeFavorite(this.subredditInfo.name);
+        this.loadFavorites();
+    }    
+
     private loadFromUrl()
     {
         var hash = window.location.hash.slice(1);
@@ -180,6 +209,7 @@ class MainController
         this.redditData.GetSubredditInfo(this.subreddit).then(i => {
             this.subredditInfo = i;
             this.color = i.color;
+            this.loadFavorites();
         });
     }
 
