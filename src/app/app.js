@@ -152,7 +152,7 @@ class MainController {
     }
     loadFavorites() {
         this.favorites = this.favoriteService.loadFavorites().sort((a, b) => a.name[0].toLowerCase() > b.name[0].toLowerCase() ? 1 : -1);
-        this.isCurrentFavorite = this.favorites.some(e => e.name.toLowerCase() === this.subredditInfo.name.toLowerCase());
+        this.isCurrentFavorite = this.subredditInfo !== null && this.subredditInfo.name !== null && this.favorites.some(e => e.name.toLowerCase() === this.subredditInfo.name.toLowerCase());
     }
     favoriteChanged() {
         this.subreddit = this.selectedFavorite;
