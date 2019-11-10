@@ -9,6 +9,7 @@ interface ISettings
     sortOption: string;
     postCount: number;
     showSeenFilter: boolean;
+    showUpvotes: boolean;
 }
 
 class DataPersistence

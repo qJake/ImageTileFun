@@ -145,6 +145,19 @@ div.visible.menu
     text-align: right;
     width: 100%;
 }
+.ui.ribbon.label
+{
+    left: -1rem;
+    margin-right: -1.2em;
+    padding-left: 1rem;
+    padding-right: 1.2em;
+    position: absolute;
+    width: -webkit-max-content;
+    width: -moz-max-content;
+    width: max-content;
+    z-index: 5;
+    top: -1.85rem;
+}
 
 #results
 {

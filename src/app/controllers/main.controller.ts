@@ -30,6 +30,7 @@ class MainController
     showPostNum: boolean = false;
     cardsPerRow: number = 6;
     showSeenFilter: boolean = false;
+    showUpvotes: boolean = false;
 
     static $inject = ['RedditData', 'DataPersistence', 'FavoriteService', 'GlobalEvent', '$q', '$rootScope'];
 
@@ -42,6 +43,7 @@ class MainController
     { 
         $(document).on('scroll', () => this.infScrollHandler());
         this.loadSettings();
+        this.loadFavorites();
         this.loadFromUrl();
 
         // Subscribe to hash changed event
@@ -171,7 +173,7 @@ class MainController
 
     loadFavorites(): void
     {
-        this.favorites = this.favoriteService.loadFavorites().sort((a, b) => a.name[0] > b.name[0] ? 1 : -1);
+        this.favorites = this.favoriteService.loadFavorites().sort((a, b) => a.name[0].toLowerCase() > b.name[0].toLowerCase() ? 1 : -1);
         this.isCurrentFavorite = this.favorites.some(e => e.name.toLowerCase() === this.subredditInfo.name.toLowerCase());
     }
 
@@ -265,6 +267,7 @@ class MainController
         this.postCount = settings.postCount;
         this.sortOption = settings.sortOption;
         this.showSeenFilter = settings.showSeenFilter;
+        this.showUpvotes = settings.showUpvotes;
         // Execute the card layout updater
         this.updateClassName(settings.cardsPerRow);
     }
@@ -280,7 +283,8 @@ class MainController
             showGifs: this.showGifs,
             postCount: this.postCount,
             sortOption: this.sortOption,
-            showSeenFilter: this.showSeenFilter
+            showSeenFilter: this.showSeenFilter,
+            showUpvotes: this.showUpvotes
         });
     }
 

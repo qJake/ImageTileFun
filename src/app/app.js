@@ -32,8 +32,10 @@ class MainController {
         this.showPostNum = false;
         this.cardsPerRow = 6;
         this.showSeenFilter = false;
+        this.showUpvotes = false;
         $(document).on('scroll', () => this.infScrollHandler());
         this.loadSettings();
+        this.loadFavorites();
         this.loadFromUrl();
         // Subscribe to hash changed event
         $rootScope.$on('hashchange', () => this.loadFromUrl());
@@ -149,7 +151,7 @@ class MainController {
         this.noBubble($event);
     }
     loadFavorites() {
-        this.favorites = this.favoriteService.loadFavorites().sort((a, b) => a.name[0] > b.name[0] ? 1 : -1);
+        this.favorites = this.favoriteService.loadFavorites().sort((a, b) => a.name[0].toLowerCase() > b.name[0].toLowerCase() ? 1 : -1);
         this.isCurrentFavorite = this.favorites.some(e => e.name.toLowerCase() === this.subredditInfo.name.toLowerCase());
     }
     favoriteChanged() {
@@ -218,6 +220,7 @@ class MainController {
         this.postCount = settings.postCount;
         this.sortOption = settings.sortOption;
         this.showSeenFilter = settings.showSeenFilter;
+        this.showUpvotes = settings.showUpvotes;
         // Execute the card layout updater
         this.updateClassName(settings.cardsPerRow);
     }
@@ -231,7 +234,8 @@ class MainController {
             showGifs: this.showGifs,
             postCount: this.postCount,
             sortOption: this.sortOption,
-            showSeenFilter: this.showSeenFilter
+            showSeenFilter: this.showSeenFilter,
+            showUpvotes: this.showUpvotes
         });
     }
     updateSeenCount() {
@@ -452,7 +456,8 @@ class RedditData {
                         datestamp: p.created.toString(),
                         datePostedFriendly: moment.unix(p.created_utc).local().format("(YYYY) MMM Do @ h:mm a"),
                         datePostedAgo: moment.unix(p.created_utc).local().fromNow(),
-                        seen: p.seen
+                        seen: p.seen,
+                        upvotes: this.toCommaSeparated(p.score)
                     };
                 })
             };
@@ -486,6 +491,9 @@ class RedditData {
             }
         }
         return m;
+    }
+    toCommaSeparated(x) {
+        return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
     }
 }
 RedditData.BASE_URL = 'https://www.reddit.com/r/';

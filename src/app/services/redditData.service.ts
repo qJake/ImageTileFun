@@ -34,6 +34,7 @@ interface IRedditImage
     datePostedAgo: string;
     datePostedFriendly: string;
     seen: boolean;
+    upvotes: string;
 }
 
 interface IPostMetadata
@@ -149,7 +150,8 @@ class RedditData
                                             datestamp: p.created.toString(),
                                             datePostedFriendly: moment.unix(p.created_utc).local().format("(YYYY) MMM Do @ h:mm a"),
                                             datePostedAgo: moment.unix(p.created_utc).local().fromNow(),
-                                            seen: p.seen
+                                            seen: p.seen,
+                                            upvotes: this.toCommaSeparated(p.score)
                                         };
                                     })
                             };
@@ -193,6 +195,11 @@ class RedditData
         }
         
         return m;
+    }
+
+    private toCommaSeparated(x: number): string
+    {
+        return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
     }
 }
 app.service('RedditData', RedditData);

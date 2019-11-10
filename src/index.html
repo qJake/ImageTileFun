@@ -2,7 +2,7 @@
 <html>
 <head>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.3.0/semantic.min.css" integrity="sha256-/mC8AIsSmTcTtaf8vgnfbZXZLYhJCd0b9If/M0Y5nDw=" crossorigin="anonymous" />
-    <link rel="stylesheet" href="css/main.css?v=045195c2-29e9-4ebe-b423-d91ace06c407" type="text/css" />
+    <link rel="stylesheet" href="css/main.css?v=90a11287-d6c0-4baa-a9ef-f6bd76865a67" type="text/css" />
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
 </head>
 <body ng-app="imagetilefun">
@@ -52,6 +52,10 @@
                                     <label for="showPostNum">Show Post #s</label>
                                 </div>
                                 <div class="item">
+                                    <input id="showUpvotes" type="checkbox" ng-model="vm.showUpvotes" ng-change="vm.basicChangedHandler()" />
+                                    <label for="showUpvotes">Show Upvotes <i class="arrow alternate circle up outline icon"></i></label>
+                                </div>
+                                <div class="item">
                                     <input id="showSeenFilter" type="checkbox" ng-model="vm.showSeenFilter" ng-change="vm.basicChangedHandler()" />
                                     <label for="showSeenFilter">Dim "Seen" posts ({{ vm.seenCount.toLocaleString() }}) &ndash; <a ng-click="vm.resetSeen()">reset</a></label>
                                 </div>
@@ -71,7 +75,7 @@
                                     <label for="showGifs">Show GIFs/GIFVs</label>
                                 </div>
                                 <div class="dimmed right aligned item">
-                                    <small><span title="Released 2019-10-13">v1.3</span> &mdash; Open source on <a href="https://github.com/qjake/imagetilefun" target="_blank"><i class="large fitted github icon"></i> GitHub</a></small>
+                                    <small><span title="Released 2019-11-09">v1.4</span> &mdash; Open source on <a href="https://github.com/qjake/imagetilefun" target="_blank"><i class="large fitted github icon"></i> GitHub</a></small>
                                 </div>
                             </div>
                             <div class="scrollable column">
@@ -139,11 +143,12 @@
                         <div class="ui loader"></div>
                     </div>
                     <div class="ui blue floating circular label" ng-show="vm.showPostNum">{{card.postNum}}</div>
+                    <div class="ui orange ribbon label" ng-show="vm.showUpvotes"><i class="up arrow icon"></i> {{card.upvotes}}</div>
                     <div class="ui grey bottom attached mini itf-date label" title="{{card.datePostedFriendly}}" ng-show="vm.showDates">
                         <div class="ui right floated content">
                             <a class="info-link" ng-href="{{card.permalink}}" target="_blank">{{card.comments}} c</a>
                             | <a class="info-link" ng-href="https://www.google.com/searchbyimage?image_url={{card.imageUrl}}&safe=off" title="Google Reverse Image Search" target="_blank">gi</a>
-                            | <a class="info-link" ng-href="https://www.yandex.com/images/search?rpt=imageview&img_url={{card.imageUrl}}" title="Yandex Image Search" target="_blank">ydx</a>
+                            | <a class="info-link" ng-href="https://yandex.com/images/search?rpt=imageview&img_url={{card.imageUrl}}" title="Yandex Image Search" target="_blank">ydx</a>
                         </div>
                         {{card.datePostedAgo}}
                     </div>
@@ -174,7 +179,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.21.0/moment.min.js" integrity="sha256-9YAuB2VnFZNJ+lKfpaQ3dKQT9/C0j3VUla76hHbiVF8=" crossorigin="anonymous"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.3.0/semantic.min.js" integrity="sha256-FMQoXFhCWeNb139Wa9Z2I0UjqDeKKDYY+6PLkWv4qco=" crossorigin="anonymous"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.6.5/angular.min.js" integrity="sha256-zBy1l2WBAh2vPF8rnjFMUXujsfkKjya0Jy5j6yKj0+Q=" crossorigin="anonymous"></script>
-    <script src="app/app.js" defer></script>
+    <script src="app/app.js?v=90a11287-d6c0-4baa-a9ef-f6bd76865a67" defer></script>
     <script>window.dataLayer = window.dataLayer || [];function gtag(){dataLayer.push(arguments);}gtag('js', new Date());gtag('config', 'UA-115800294-1');</script>
 </body>
 </html>
