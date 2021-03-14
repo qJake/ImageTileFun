@@ -4,11 +4,10 @@ $(function () {
     $('.ui.select').not('.non-stick').dropdown();
 });
 class MainController {
-    constructor(redditData, dataStore, favoriteService, $scope, $rootScope) {
+    constructor(redditData, dataStore, favoriteService, $rootScope) {
         this.redditData = redditData;
         this.dataStore = dataStore;
         this.favoriteService = favoriteService;
-        this.$scope = $scope;
         this.subreddit = '';
         this.sortOption = '_';
         this.postCount = 100;
@@ -108,9 +107,7 @@ class MainController {
         // Hack because the event handler replaces "this"...
         var me = angular.element($('#app')).controller();
         // Also update the top handler
-        this.$scope.$apply(() => {
-            this.notOnTop = window.scrollY > 100;
-        });
+        this.notOnTop = window.scrollY > 100;
         $.debounce(2000, true, () => {
             if (window.scrollY + window.innerHeight >= document.body.scrollHeight - MainController.INF_SCROLL_THRESHOLD && !me.mainLoading && me.next) {
                 this.loadSubreddit(true);
@@ -263,7 +260,7 @@ class MainController {
     }
 }
 MainController.INF_SCROLL_THRESHOLD = 400;
-MainController.$inject = ['RedditData', 'DataPersistence', 'FavoriteService', '$scope', '$rootScope'];
+MainController.$inject = ['RedditData', 'DataPersistence', 'FavoriteService', '$rootScope'];
 app.controller('MainController', MainController);
 /*!
  * jQuery throttle / debounce - v1.1 - 3/7/2010
