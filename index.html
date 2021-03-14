@@ -8,6 +8,9 @@
 <body ng-app="imagetilefun">
     <a id="top"></a>
     <div id="app" ng-controller="MainController as vm">
+        <div id="topButton" ng-show="vm.notOnTop" ng-click="vm.toTop()" title="Scroll up to the top">
+            <i class="plus icon"></i>
+        </div>
         <div id="options" class="ui form" ng-click="vm.closeMenu($event)">
             <div class="field">
                 <div ng-if="vm.subredditInfo && vm.subredditInfo.icon" class="sr-icon">
@@ -75,7 +78,7 @@
                                     <label for="showGifs">Show GIFs/GIFVs</label>
                                 </div>
                                 <div class="dimmed right aligned item">
-                                    <small><span title="Released 2019-11-09">v1.4</span> &mdash; Open source on <a href="https://github.com/qjake/imagetilefun" target="_blank"><i class="large fitted github icon"></i> GitHub</a></small>
+                                    <small><span title="Released 2021-03-13">v1.5</span> &mdash; Open source on <a href="https://github.com/qjake/imagetilefun" target="_blank"><i class="large fitted github icon"></i> GitHub</a></small>
                                 </div>
                             </div>
                             <div class="scrollable column">

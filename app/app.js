@@ -4,13 +4,11 @@ $(function () {
     $('.ui.select').not('.non-stick').dropdown();
 });
 class MainController {
-    constructor(redditData, dataStore, favoriteService, globalEvent, $q, $rootScope) {
+    constructor(redditData, dataStore, favoriteService, $scope, $rootScope) {
         this.redditData = redditData;
         this.dataStore = dataStore;
         this.favoriteService = favoriteService;
-        this.globalEvent = globalEvent;
-        this.$q = $q;
-        this.$rootScope = $rootScope;
+        this.$scope = $scope;
         this.subreddit = '';
         this.sortOption = '_';
         this.postCount = 100;
@@ -24,6 +22,7 @@ class MainController {
         this.subredditInfo = null;
         this.showExtDesc = false;
         this.lastLoadedOn = new Date(1);
+        this.notOnTop = true;
         // Options
         this.showImages = true;
         this.showGifs = false;
@@ -102,9 +101,16 @@ class MainController {
         // Re-flowing cards could cause the page to not be able to scroll, so re-check if we're at the "bottom".
         this.infScrollHandler();
     }
+    toTop() {
+        window.scrollTo(0, 0);
+    }
     infScrollHandler() {
         // Hack because the event handler replaces "this"...
         var me = angular.element($('#app')).controller();
+        // Also update the top handler
+        this.$scope.$apply(() => {
+            this.notOnTop = window.scrollY > 100;
+        });
         $.debounce(2000, true, () => {
             if (window.scrollY + window.innerHeight >= document.body.scrollHeight - MainController.INF_SCROLL_THRESHOLD && !me.mainLoading && me.next) {
                 this.loadSubreddit(true);
@@ -185,11 +191,12 @@ class MainController {
         this.mainLoading = true;
         this.redditData.GetImagesFromSubreddit(this.subreddit, this.next, this.sortOption, parseInt(this.postCount.toString()), this.count)
             .then(data => {
+            var dupeFilteredImgs = data.images.filter(di => this.images.findIndex(ii => ii.postNum == di.postNum) === -1);
             if (append) {
-                this.images = this.images.concat(data.images);
+                this.images = this.images.concat(dupeFilteredImgs);
             }
             else {
-                this.images = data.images;
+                this.images = dupeFilteredImgs;
             }
             this.count = data.count;
             this.next = data.after;
@@ -247,9 +254,16 @@ class MainController {
         $event.cancelBubble = true;
         $event.returnValue = false;
     }
+    sleep(milliseconds) {
+        const date = Date.now();
+        let currentDate = null;
+        do {
+            currentDate = Date.now();
+        } while (currentDate - date < milliseconds);
+    }
 }
-MainController.INF_SCROLL_THRESHOLD = 500;
-MainController.$inject = ['RedditData', 'DataPersistence', 'FavoriteService', 'GlobalEvent', '$q', '$rootScope'];
+MainController.INF_SCROLL_THRESHOLD = 400;
+MainController.$inject = ['RedditData', 'DataPersistence', 'FavoriteService', '$scope', '$rootScope'];
 app.controller('MainController', MainController);
 /*!
  * jQuery throttle / debounce - v1.1 - 3/7/2010
