@@ -3,7 +3,7 @@ declare function gtag(a: any, b: any, c: any, d: any, e?: any, f?: any): any
 
 class MainController
 {
-    private static INF_SCROLL_THRESHOLD = 500;
+    private static INF_SCROLL_THRESHOLD = 400;
 
     subreddit: string = '';
     sortOption: string = '_';
@@ -21,6 +21,7 @@ class MainController
     favorites: IFavorite[];
     selectedFavorite: string;
     isCurrentFavorite: boolean;
+    notOnTop: boolean = true;
 
     // Options
     showImages: boolean = true;
@@ -32,14 +33,13 @@ class MainController
     showSeenFilter: boolean = false;
     showUpvotes: boolean = false;
 
-    static $inject = ['RedditData', 'DataPersistence', 'FavoriteService', 'GlobalEvent', '$q', '$rootScope'];
+    static $inject = ['RedditData', 'DataPersistence', 'FavoriteService', '$scope', '$rootScope'];
 
     constructor(private redditData: RedditData,
                 private dataStore: DataPersistence,
                 private favoriteService: FavoriteService,
-                private globalEvent: GlobalEvent,
-                private $q: ng.IQService,
-                private $rootScope: ng.IRootScopeService)
+                private $scope: ng.IScope,
+                $rootScope: ng.IRootScopeService)
     { 
         $(document).on('scroll', () => this.infScrollHandler());
         this.loadSettings();
@@ -101,10 +101,21 @@ class MainController
         this.infScrollHandler();
     }
 
+    toTop(): void
+    {
+        window.scrollTo(0, 0);
+    }
+
     infScrollHandler(): void
     {
         // Hack because the event handler replaces "this"...
-        var me = angular.element($('#app')).controller();
+        var me = <MainController>angular.element($('#app')).controller();
+
+        // Also update the top handler
+        this.$scope.$apply(() =>
+        {
+            this.notOnTop = window.scrollY > 100;
+        });
 
         $.debounce(2000, true, () =>
         {
@@ -222,15 +233,17 @@ class MainController
         this.redditData.GetImagesFromSubreddit(this.subreddit, this.next, this.sortOption, parseInt(this.postCount.toString()), this.count)
         .then(data =>
         {
+            var dupeFilteredImgs = data.images.filter(di => this.images.findIndex(ii => ii.postNum == di.postNum) === -1)
+
             if (append)
             {
-                this.images = this.images.concat(data.images);
+                this.images = this.images.concat(dupeFilteredImgs);
             }
             else
             {
-                this.images = data.images;
+                this.images = dupeFilteredImgs;
             }
-
+        
             this.count = data.count;
             this.next = data.after;
             this.mainLoading = false;
@@ -299,6 +312,17 @@ class MainController
         $event.preventDefault();
         $event.cancelBubble = true;
         $event.returnValue = false;
+    }
+
+    private sleep(milliseconds)
+    {
+        const date = Date.now();
+        let currentDate = null;
+        do
+        {
+            currentDate = Date.now();
+        }
+        while (currentDate - date < milliseconds);
     }
 }
 app.controller('MainController', MainController);

@@ -8,6 +8,9 @@
 <body ng-app="imagetilefun">
     <a id="top"></a>
     <div id="app" ng-controller="MainController as vm">
+        <div id="topButton" ng-show="vm.notOnTop" ng-click="vm.toTop()" title="Scroll up to the top">
+            <i class="plus icon"></i>
+        </div>
         <div id="options" class="ui form" ng-click="vm.closeMenu($event)">
             <div class="field">
                 <div ng-if="vm.subredditInfo && vm.subredditInfo.icon" class="sr-icon">
