@@ -33,12 +33,11 @@ class MainController
     showSeenFilter: boolean = false;
     showUpvotes: boolean = false;
 
-    static $inject = ['RedditData', 'DataPersistence', 'FavoriteService', '$scope', '$rootScope'];
+    static $inject = ['RedditData', 'DataPersistence', 'FavoriteService', '$rootScope'];
 
     constructor(private redditData: RedditData,
                 private dataStore: DataPersistence,
                 private favoriteService: FavoriteService,
-                private $scope: ng.IScope,
                 $rootScope: ng.IRootScopeService)
     { 
         $(document).on('scroll', () => this.infScrollHandler());
@@ -112,10 +111,7 @@ class MainController
         var me = <MainController>angular.element($('#app')).controller();
 
         // Also update the top handler
-        this.$scope.$apply(() =>
-        {
-            this.notOnTop = window.scrollY > 100;
-        });
+        this.notOnTop = window.scrollY > 100;
 
         $.debounce(2000, true, () =>
         {
