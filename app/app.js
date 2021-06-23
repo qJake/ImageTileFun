@@ -4,10 +4,11 @@ $(function () {
     $('.ui.select').not('.non-stick').dropdown();
 });
 class MainController {
-    constructor(redditData, dataStore, favoriteService, $rootScope) {
+    constructor(redditData, dataStore, favoriteService, $rootScope, $scope, $window) {
         this.redditData = redditData;
         this.dataStore = dataStore;
         this.favoriteService = favoriteService;
+        this.$scope = $scope;
         this.subreddit = '';
         this.sortOption = '_';
         this.postCount = 100;
@@ -21,7 +22,7 @@ class MainController {
         this.subredditInfo = null;
         this.showExtDesc = false;
         this.lastLoadedOn = new Date(1);
-        this.notOnTop = true;
+        this.notOnTop = false;
         // Options
         this.showImages = true;
         this.showGifs = false;
@@ -31,12 +32,42 @@ class MainController {
         this.cardsPerRow = 6;
         this.showSeenFilter = false;
         this.showUpvotes = false;
+        this.imageDelay = 500;
+        this.imageResolverThread = -1;
+        angular.element($window).bind('scroll', this.backToTopScrollHandler);
         $(document).on('scroll', () => this.infScrollHandler());
         this.loadSettings();
         this.loadFavorites();
         this.loadFromUrl();
         // Subscribe to hash changed event
         $rootScope.$on('hashchange', () => this.loadFromUrl());
+        // Start the image resolver loop
+        this.startImageResolver();
+    }
+    startImageResolver() {
+        this.imageResolverThread = window.setInterval(this.resolveNextImage, this.imageDelay);
+    }
+    stopImageResolver() {
+        if (this.imageResolverThread > 0) {
+            window.clearInterval(this.imageResolverThread);
+            this.imageResolverThread = -1;
+        }
+    }
+    resolveNextImage() {
+        let ele = $('#results .image img:not([src])').first();
+        if (ele) {
+            let url = ele.data('sourceurl');
+            if (url) {
+                ele.removeAttr('data-sourceurl');
+                ele.attr('src', url);
+            }
+        }
+        // Find and remove "removed.png"
+        $('#results img').each((i, e) => {
+            if ($(e).attr('src') && $(e).attr('src').endsWith('removed.png')) {
+                $(e).parent('.card').remove();
+            }
+        });
     }
     load() {
         if (this.subreddit && this.subreddit.length > 0) {
@@ -103,12 +134,16 @@ class MainController {
     toTop() {
         window.scrollTo(0, 0);
     }
+    backToTopScrollHandler() {
+        var me = angular.element($('#app')).controller();
+        // Update the top handler
+        me.notOnTop = window.scrollY > 100;
+        me.$scope.$apply();
+    }
     infScrollHandler() {
         // Hack because the event handler replaces "this"...
         var me = angular.element($('#app')).controller();
-        // Also update the top handler
-        this.notOnTop = window.scrollY > 100;
-        $.debounce(2000, true, () => {
+        $.debounce(4000, true, () => {
             if (window.scrollY + window.innerHeight >= document.body.scrollHeight - MainController.INF_SCROLL_THRESHOLD && !me.mainLoading && me.next) {
                 this.loadSubreddit(true);
                 gtag('send', 'event', 'itd', 'loadMore');
@@ -202,12 +237,6 @@ class MainController {
             this.infScrollHandler();
             // Update 'seen'
             this.updateSeenCount();
-            // Find and remove "removed.png"
-            $('#results img').each((i, e) => {
-                if ($(e).attr('src').endsWith('removed.png')) {
-                    $(e).parent('.card').remove();
-                }
-            });
         });
     }
     loadSettings() {
@@ -225,6 +254,7 @@ class MainController {
         this.sortOption = settings.sortOption;
         this.showSeenFilter = settings.showSeenFilter;
         this.showUpvotes = settings.showUpvotes;
+        this.imageDelay = settings.imageDelay;
         // Execute the card layout updater
         this.updateClassName(settings.cardsPerRow);
     }
@@ -239,8 +269,11 @@ class MainController {
             postCount: this.postCount,
             sortOption: this.sortOption,
             showSeenFilter: this.showSeenFilter,
-            showUpvotes: this.showUpvotes
+            showUpvotes: this.showUpvotes,
+            imageDelay: this.imageDelay
         });
+        this.stopImageResolver();
+        this.startImageResolver();
     }
     updateSeenCount() {
         this.seenCount = this.dataStore.GetSeenList().length;
@@ -259,8 +292,8 @@ class MainController {
         } while (currentDate - date < milliseconds);
     }
 }
-MainController.INF_SCROLL_THRESHOLD = 400;
-MainController.$inject = ['RedditData', 'DataPersistence', 'FavoriteService', '$rootScope'];
+MainController.INF_SCROLL_THRESHOLD = 20;
+MainController.$inject = ['RedditData', 'DataPersistence', 'FavoriteService', '$rootScope', '$scope', '$window'];
 app.controller('MainController', MainController);
 /*!
  * jQuery throttle / debounce - v1.1 - 3/7/2010

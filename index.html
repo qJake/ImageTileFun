@@ -8,8 +8,8 @@
 <body ng-app="imagetilefun">
     <a id="top"></a>
     <div id="app" ng-controller="MainController as vm">
-        <div id="topButton" ng-show="vm.notOnTop" ng-click="vm.toTop()" title="Scroll up to the top">
-            <i class="plus icon"></i>
+        <div id="topButton" ng-click="vm.toTop()" ng-class="{flyIn: vm.notOnTop}" title="Scroll up to the top">
+            <i class="up chevron icon"></i>
         </div>
         <div id="options" class="ui form" ng-click="vm.closeMenu($event)">
             <div class="field">
@@ -77,8 +77,12 @@
                                     <input id="showGifs" type="checkbox" ng-model="vm.showGifs" ng-change="vm.basicChangedHandler()" />
                                     <label for="showGifs">Show GIFs/GIFVs</label>
                                 </div>
+                                <div class="item no-mobile">
+                                    <label for="cardsPerRow">Load delay</label>
+                                    <input id="cardsPerRow" type="range" min="100" max="3000" step="100" ng-change="vm.basicChangedHandler()" ng-model="vm.imageDelay" style="width: 110px;" /> <span>{{vm.imageDelay}} ms</span>
+                                </div>
                                 <div class="dimmed right aligned item">
-                                    <small><span title="Released 2021-03-13">v1.5.1</span> &mdash; Open source on <a href="https://github.com/qjake/imagetilefun" target="_blank"><i class="large fitted github icon"></i> GitHub</a></small>
+                                    <small><span title="Released 2021-06-22">v1.6</span> &mdash; Open source on <a href="https://github.com/qjake/imagetilefun" target="_blank"><i class="large fitted github icon"></i> GitHub</a></small>
                                 </div>
                             </div>
                             <div class="scrollable column">
@@ -160,7 +164,7 @@
                     </div>  
                     <div class="image">
                         <a target="_blank" href="{{card.imageUrl}}">
-                            <img class="ui image" ng-src="{{card.metadata.updatedImageUrl ? card.metadata.updatedImageUrl : card.imageUrl}}" ng-if="card.metadata.displayAs == 'image'" />
+                            <img class="ui image" ng-attr-data-sourceurl="{{card.metadata.updatedImageUrl ? card.metadata.updatedImageUrl : card.imageUrl}}" ng-if="card.metadata.displayAs == 'image'" />
                             <video class="ui image" ng-if="card.metadata.displayAs == 'video'" preload="auto" autoplay="autoplay" loop="loop" muted="muted">
                                 <source ng-src="{{card.metadata.updatedImageUrl ? card.metadata.updatedImageUrl : card.imageUrl}}" type="video/mp4" />
                             </video>
@@ -168,6 +172,10 @@
                     </div>
                 </div>
             </div>
+        </div>
+        <div ng-show="!vm.mainLoading && vm.images.length && vm.next" class="ui centered center aligned massive scroll-msg basic segment">
+            <p><i class="huge green down arrow icon"></i></p>
+            <p>Scroll down to load more...</p>
         </div>
         <div class="ui active centered huge inline loader" ng-show="vm.mainLoading" style="min-height: 150px; margin-top: 5rem;"></div>
         <div ng-show="vm.images.length && !vm.next" class="ui center aligned header" style="margin-top: 4rem; margin-bottom: 5rem;">
