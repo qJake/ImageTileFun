@@ -10,6 +10,7 @@ interface ISettings
     postCount: number;
     showSeenFilter: boolean;
     showUpvotes: boolean;
+    imageDelay: number;
 }
 
 class DataPersistence

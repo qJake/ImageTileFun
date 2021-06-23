@@ -3,7 +3,7 @@ declare function gtag(a: any, b: any, c: any, d: any, e?: any, f?: any): any
 
 class MainController
 {
-    private static INF_SCROLL_THRESHOLD = 400;
+    private static INF_SCROLL_THRESHOLD = 20;
 
     subreddit: string = '';
     sortOption: string = '_';
@@ -21,7 +21,7 @@ class MainController
     favorites: IFavorite[];
     selectedFavorite: string;
     isCurrentFavorite: boolean;
-    notOnTop: boolean = true;
+    notOnTop: boolean = false;
 
     // Options
     showImages: boolean = true;
@@ -32,14 +32,20 @@ class MainController
     cardsPerRow: number = 6;
     showSeenFilter: boolean = false;
     showUpvotes: boolean = false;
+    imageDelay: number = 500;
 
-    static $inject = ['RedditData', 'DataPersistence', 'FavoriteService', '$rootScope'];
+    imageResolverThread: number = -1;
+
+    static $inject = ['RedditData', 'DataPersistence', 'FavoriteService', '$rootScope', '$scope', '$window'];
 
     constructor(private redditData: RedditData,
                 private dataStore: DataPersistence,
                 private favoriteService: FavoriteService,
-                $rootScope: ng.IRootScopeService)
-    { 
+                $rootScope: ng.IRootScopeService,
+                private $scope: ng.IScope,
+                $window: ng.IWindowService)
+    {
+        angular.element($window).bind('scroll', this.backToTopScrollHandler);
         $(document).on('scroll', () => this.infScrollHandler());
         this.loadSettings();
         this.loadFavorites();
@@ -47,6 +53,45 @@ class MainController
 
         // Subscribe to hash changed event
         $rootScope.$on('hashchange', () => this.loadFromUrl());
+
+        // Start the image resolver loop
+        this.startImageResolver();
+    }
+
+    startImageResolver(): void
+    {
+        this.imageResolverThread = window.setInterval(this.resolveNextImage, this.imageDelay);
+    }
+
+    stopImageResolver(): void
+    {
+        if (this.imageResolverThread > 0)
+        {
+            window.clearInterval(this.imageResolverThread);
+            this.imageResolverThread = -1;
+        }
+    }
+
+    resolveNextImage(): void
+    {
+        let ele = $('#results .image img:not([src])').first();
+        if (ele)
+        {
+            let url = ele.data('sourceurl');
+            if (url)
+            {
+                ele.removeAttr('data-sourceurl');
+                ele.attr('src', url);
+            }
+        }
+
+        // Find and remove "removed.png"
+        $('#results img').each((i, e) => {
+            if ($(e).attr('src') && $(e).attr('src').endsWith('removed.png'))
+            {
+                $(e).parent('.card').remove();
+            }
+        });
     }
 
     load(): void
@@ -105,15 +150,21 @@ class MainController
         window.scrollTo(0, 0);
     }
 
+    backToTopScrollHandler(): void
+    {
+        var me = <MainController>angular.element($('#app')).controller();
+
+        // Update the top handler
+        me.notOnTop = window.scrollY > 100;
+        me.$scope.$apply();
+    }
+
     infScrollHandler(): void
     {
         // Hack because the event handler replaces "this"...
         var me = <MainController>angular.element($('#app')).controller();
 
-        // Also update the top handler
-        this.notOnTop = window.scrollY > 100;
-
-        $.debounce(2000, true, () =>
+        $.debounce(4000, true, () =>
         {
             if (window.scrollY + window.innerHeight >= document.body.scrollHeight - MainController.INF_SCROLL_THRESHOLD && !me.mainLoading && me.next)
             {
@@ -249,14 +300,6 @@ class MainController
 
             // Update 'seen'
             this.updateSeenCount();
-
-            // Find and remove "removed.png"
-            $('#results img').each((i, e) => {
-                if ($(e).attr('src').endsWith('removed.png'))
-                {
-                    $(e).parent('.card').remove();
-                }
-            });
         })        
     }
 
@@ -277,6 +320,7 @@ class MainController
         this.sortOption = settings.sortOption;
         this.showSeenFilter = settings.showSeenFilter;
         this.showUpvotes = settings.showUpvotes;
+        this.imageDelay = settings.imageDelay;
         // Execute the card layout updater
         this.updateClassName(settings.cardsPerRow);
     }
@@ -293,8 +337,12 @@ class MainController
             postCount: this.postCount,
             sortOption: this.sortOption,
             showSeenFilter: this.showSeenFilter,
-            showUpvotes: this.showUpvotes
+            showUpvotes: this.showUpvotes,
+            imageDelay: this.imageDelay
         });
+
+        this.stopImageResolver();
+        this.startImageResolver();
     }
 
     private updateSeenCount(): void
