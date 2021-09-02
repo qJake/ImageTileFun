@@ -365,9 +365,7 @@ class DataPersistence {
     }
     SaveSeenList(seen) {
         // de-dupe first
-        var uniqueSeen = seen.filter(function (item, i) {
-            return seen.indexOf(item) == i;
-        });
+        var uniqueSeen = [...new Set(seen)];
         localStorage.setItem(DataPersistence.seenKey, JSON.stringify(uniqueSeen));
     }
     GetSeenList() {
